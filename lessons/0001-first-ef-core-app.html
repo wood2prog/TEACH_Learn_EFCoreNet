@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 1: Your First EF Core App</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --border: #e5e7eb;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+    --green: #059669;
+    --amber: #d97706;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 2rem 1rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.35rem; font-weight: 600; margin-top: 2.5rem; margin-bottom: 0.75rem;
+       padding-bottom: 0.35rem; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; }
+  p, li { margin-bottom: 0.75rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+  .meta span { background: var(--accent-bg); padding: 0.2rem 0.6rem; border-radius: 4px; color: var(--accent); font-weight: 500; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    font-size: 0.85em;
+    background: #f1f5f9;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    color: #b91c1c;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    tab-size: 4;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .cmd { display: block; padding: 0.75rem 1rem; background: #0f172a; border-radius: 6px; margin-bottom: 0.5rem; }
+  .cmd::before { content: "$ "; color: #22c55e; }
+  .note {
+    background: #fffbeb; border-left: 4px solid var(--amber); padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0; margin-bottom: 1.25rem; font-size: 0.9rem;
+  }
+  .tip {
+    background: #ecfdf5; border-left: 4px solid var(--green); padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0; margin-bottom: 1.25rem; font-size: 0.9rem;
+  }
+  .task {
+    background: var(--accent-bg); border: 2px solid var(--accent); padding: 1.25rem;
+    border-radius: 8px; margin: 1.5rem 0;
+  }
+  .task h3 { margin-top: 0; color: var(--accent); }
+  hr { border: none; border-top: 2px solid var(--border); margin: 2rem 0; }
+  .tag { display: inline-block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+         letter-spacing: 0.05em; padding: 0.15rem 0.5rem; border-radius: 4px; margin-right: 0.4rem; }
+  .tag-dotnet { background: #512bd4; color: #fff; }
+  .tag-ef { background: var(--accent); color: #fff; }
+  @media print {
+    body { padding: 0; max-width: 100%; }
+    pre { break-inside: avoid; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Lesson 1: Your First EF Core App</h1>
+<div class="meta">
+  <span>⏱ ~20 min</span>
+  <span><span class="tag tag-dotnet">.NET 10</span><span class="tag tag-ef">EF Core 10</span></span>
+</div>
+
+<p class="note">
+  <strong>Mission link:</strong> You want to be able to work on .NET projects using EF Core.
+  This lesson gets you from "I've read about it" to "I've built it." Every future lesson builds on this foundation.
+</p>
+
+<h2>What you'll learn</h2>
+<ul>
+  <li>Scaffold a .NET console project</li>
+  <li>Add the EF Core SQLite NuGet package</li>
+  <li>Define an entity class and <code>DbContext</code></li>
+  <li>Create and apply a migration</li>
+  <li>Write, read, update, and delete data</li>
+</ul>
+
+<h2>1. Create the project</h2>
+<p>Open a terminal and run:</p>
+<span class="cmd">dotnet new console -n BookApp</span>
+<span class="cmd">cd BookApp</span>
+
+<p>Open the project in your editor. This is a blank .NET project — we'll add EF Core to it.</p>
+
+<h2>2. Install the EF Core SQLite provider</h2>
+<p>EF Core uses a <strong>provider model</strong>. Each database type (SQL Server, SQLite, PostgreSQL, etc.) has its own provider package. We'll use SQLite — zero setup, runs everywhere.</p>
+
+<span class="cmd">dotnet add package Microsoft.EntityFrameworkCore.Sqlite</span>
+<span class="cmd">dotnet add package Microsoft.EntityFrameworkCore.Design</span>
+
+<p class="tip">
+  <strong>Why two packages?</strong> <code>Sqlite</code> is the database driver. <code>Design</code> provides the <code>dotnet ef</code> tooling (migrations, scaffolding). You need both.
+</p>
+
+<p>Also install the <code>dotnet-ef</code> global tool if you haven't already:</p>
+
+<span class="cmd">dotnet tool install --global dotnet-ef</span>
+
+<h2>3. Define a model</h2>
+<p>Create a file <code>Book.cs</code>:</p>
+
+<pre><code>public class Book
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
+    public int PublicationYear { get; set; }
+    public decimal Price { get; set; }
+}</code></pre>
+
+<div class="note">
+  <strong>Convention:</strong> EF Core automatically treats a property named <code>Id</code> or <code>&lt;EntityName&gt;Id</code> as the primary key. No attributes needed — that's the <strong>convention over configuration</strong> philosophy.
+</div>
+
+<h2>4. Create a DbContext</h2>
+<p>The <code>DbContext</code> is your session with the database. It coordinates querying, saving, and tracking changes. Create <code>BookContext.cs</code>:</p>
+
+<pre><code>using Microsoft.EntityFrameworkCore;
+
+public class BookContext : DbContext
+{
+    public DbSet&lt;Book&gt; Books { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite("Data Source=books.db");
+    }
+}</code></pre>
+
+<p class="tip">
+  <strong>Note:</strong> Hardcoding connection strings is fine for a console app. In production apps (ASP.NET Core), you'd register the context via DI and read the connection string from configuration. We'll cover that later.
+</p>
+
+<h2>5. Create and apply a migration</h2>
+<p>Migrations translate your C# model into database schema. Run:</p>
+
+<span class="cmd">dotnet ef migrations add InitialCreate</span>
+
+<p>This creates a <code>Migrations</code> folder with two files: a snapshot (tracks your model) and a migration (the SQL to create tables). Look at them — they're just C#.</p>
+
+<p>Now apply the migration to create the actual database:</p>
+
+<span class="cmd">dotnet ef database update</span>
+
+<p>You should now see <code>books.db</code> in your project folder. That's your SQLite database.</p>
+
+<h2>6. Write some CRUD code</h2>
+<p>Replace <code>Program.cs</code> with:</p>
+
+<pre><code>using Microsoft.EntityFrameworkCore;
+
+// Create
+using var db = new BookContext();
+db.Database.EnsureCreated();
+
+db.Books.Add(new Book
+{
+    Title = "Domain-Driven Design",
+    Author = "Eric Evans",
+    PublicationYear = 2003,
+    Price = 49.99m
+});
+db.SaveChanges();
+Console.WriteLine("✅ Book inserted!");
+
+// Read
+var books = db.Books
+    .Where(b => b.PublicationYear > 2000)
+    .OrderBy(b => b.Title)
+    .ToList();
+
+Console.WriteLine($"\nBooks ({books.Count} found):");
+foreach (var book in books)
+{
+    Console.WriteLine($"  {book.Title} by {book.Author} — ${book.Price}");
+}
+
+// Update
+var bookToUpdate = db.Books.First();
+bookToUpdate.Price = 39.99m;
+db.SaveChanges();
+Console.WriteLine($"\n✅ Updated price to ${bookToUpdate.Price}");
+
+// Delete
+db.Books.Remove(bookToUpdate);
+db.SaveChanges();
+Console.WriteLine("✅ Book deleted!");</code></pre>
+
+<p>Run it:</p>
+
+<span class="cmd">dotnet run</span>
+
+<p>You should see:</p>
+
+<pre><code>✅ Book inserted!
+
+Books (1 found):
+  Domain-Driven Design by Eric Evans — $49.99
+
+✅ Updated price to $39.99
+✅ Book deleted!</code></pre>
+
+<h2>7. Your task</h2>
+<div class="task">
+<h3>✏️ Add a Genre property</h3>
+<ol>
+  <li>Add a <code>Genre</code> string property to the <code>Book</code> class</li>
+  <li>Create a new migration: <code>dotnet ef migrations add AddGenre</code></li>
+  <li>Apply it: <code>dotnet ef database update</code></li>
+  <li>Modify <code>Program.cs</code> to set a genre when inserting a book</li>
+  <li>Run the app and confirm it works</li>
+</ol>
+<p><strong>Extra:</strong> Query books filtered by genre.</p>
+</div>
+
+<h2>Key takeaways</h2>
+<ul>
+  <li><strong>Entity class</strong> → table. Properties → columns. Conventions (like <code>Id</code> → PK) reduce boilerplate.</li>
+  <li><strong>DbContext</strong> is your bridge between C# and the database. You expose entities via <code>DbSet&lt;T&gt;</code> properties.</li>
+  <li><strong>Migrations</strong> are version-controlled C# files that evolve your schema. Create them with <code>dotnet ef migrations add</code>, apply them with <code>dotnet ef database update</code>.</li>
+  <li><strong>CRUD</strong> is just LINQ + <code>SaveChanges()</code>. EF Core tracks changes and generates the SQL automatically.</li>
+</ul>
+
+<h2>Next steps</h2>
+<p>You've gone from zero to running database code. In the next lesson, we'll model <strong>relationships</strong> — one-to-many and many-to-many — which is where EF Core really shines.</p>
+
+<p>See the <a href="../reference/glossary.html">EF Core Glossary</a> for terms used in this lesson.</p>
+
+<hr>
+
+<p style="font-size: 0.85rem; color: var(--muted);">
+  <strong>Got questions?</strong> Ask me anything about this lesson. If you hit a wall, the
+  <a href="https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app">official getting-started tutorial</a>
+  and <a href="https://stackoverflow.com/questions/tagged/entity-framework-core">Stack Overflow</a> are great fallbacks.
+</p>
+
+</body>
+</html>
